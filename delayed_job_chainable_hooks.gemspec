@@ -30,10 +30,19 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'delayed_job', '>= 4.1.3'
+  spec.add_dependency 'delayed_job_active_record'
+  spec.add_dependency 'hooks'
+  spec.add_dependency 'activesupport', '>= 4.1'
+
   spec.add_development_dependency 'bundler', '~> 1.12'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.4'
+  spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'salsify_rubocop', '~> 0.48.1'
   spec.add_development_dependency 'overcommit'
+  spec.add_development_dependency 'activerecord', '>= 4.2'
+  spec.add_development_dependency 'database_cleaner'
+  spec.add_development_dependency 'pg'
 
 end
