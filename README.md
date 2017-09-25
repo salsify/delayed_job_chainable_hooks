@@ -32,7 +32,13 @@ Or install it yourself as:
 
 ## Usage
 
-Currently it supports the following:
+Add the plugin to `Delayed::Worker.plugins`. In Rails you could put this line in `config/initializers/delayed_job_config.rb`:
+
+```
+Delayed::Worker.plugins << DelayedJobChainableHooks::Plugin
+```
+
+Currently the gem provides the following hooks:
 
 - `before_job_attempt`
 - `after_job_attempt_error`
