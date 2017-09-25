@@ -4,29 +4,29 @@ module DelayedJobChainableHooks
     # Set callbacks that are available via the Delayed Job lifecycle mechanism
     callbacks do |lifecycle|
       lifecycle.before(:perform) do |_, job|
-        payload = Plugin.payload_object(job)
-        Plugin.safe_run_hooks(payload, :before_job_attempt, job)
+        payload = DelayedJobChainableHooks::Plugin.payload_object(job)
+        DelayedJobChainableHooks::Plugin.safe_run_hooks(payload, :before_job_attempt, job)
       end
 
       lifecycle.around(:invoke_job) do |job, *args, &block|
-        payload = Plugin.payload_object(job)
+        payload = DelayedJobChainableHooks::Plugin.payload_object(job)
         begin
           block.call(job, *args)
-          Plugin.run_hooks(payload, :after_job_success)
+          DelayedJobChainableHooks::Plugin.run_hooks(payload, :after_job_success)
         rescue => error
-          Plugin.run_hooks(payload, :after_job_attempt_error, error)
+          DelayedJobChainableHooks::Plugin.run_hooks(payload, :after_job_attempt_error, error)
           raise error
         end
       end
 
       lifecycle.after(:perform) do |_, job|
-        payload = Plugin.payload_object(job)
-        Plugin.safe_run_hooks(payload, :after_job_attempt, job)
+        payload = DelayedJobChainableHooks::Plugin.payload_object(job)
+        DelayedJobChainableHooks::Plugin.safe_run_hooks(payload, :after_job_attempt, job)
       end
 
       lifecycle.after(:failure) do |_, job|
         payload = Plugin.payload_object(job)
-        Plugin.safe_run_hooks(payload, :after_job_failure)
+        DelayedJobChainableHooks::Plugin.safe_run_hooks(payload, :after_job_failure)
       end
     end
 
