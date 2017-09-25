@@ -43,6 +43,89 @@ Currently it supports the following:
 Pass any of these a block in a module or job superclass. The block will be executed at the appropriate point during the job's lifecycle.
 Optionally pass do the same in a second module or subclass. Both the first and second blocks will be called during the job's lifecycle.
 
+### Example
+
+For a subset of our DelayedJobs we want to provide a polling endpoint so that
+when API clients make a request that enqueues work to be processed in the background,
+they can check back on the status of that work and adjust the UI accordingly.
+
+First we create the module to support that behavior, `ClientVisibleJob`.
+It includes `DelayedJobExtendedCallbacks`. In it we maintain job status in
+an ActiveRecord model named `ClientJobStatus`.
+
+```
+module ClientVisibleJob
+  extend ActiveSupport::Concern
+  include DelayedJobChainableHooks
+
+  included do
+    attr_accessor :client_status_id
+
+    after_job_success do
+      client_status.update!(status: :completed)
+    end
+
+    after_job_failure do
+      client_status.update!(status: :failed)
+    end
+  end
+
+  def initialize(*args)
+    @client_status = ClientJobStatus.create!(status: :running)
+    self.client_status_id = @client_status.id
+    super
+  end
+
+  def client_status
+    @client_status ||= ClientJobStatus.find(client_status_id)
+  end
+end
+```
+
+Now `ClientVisibleJob` may be included in specific job classes. Those classes
+may define their own versions of the hook methods but the ones defined in
+`ClientVisibleJob` will still execute.
+
+```
+class MakeSouffleJob
+
+  include ClientVisibleJob
+
+  def perform
+    whip_egg_whites
+    mix_egg_whites_into_yokes
+    place_in_baking_dish
+    bake
+  end
+
+  def before_job_attempt
+    Delayed::Worker.logger.info("Let's make a souffle.")
+  end
+
+  def after_job_success
+    Delayed::Worker.logger.info("Souffle has risen!")
+  end
+
+  def after_job_failure
+    Delayed::Worker.logger.warn("Souffle has fallen!")
+  end
+end
+```
+
+Code that enqueues this work, for example a web request handler, can treat `MakeSouffleJob`
+as a `ClientVisibleJob` and provide a status polling endpoint to clients.
+
+```
+def post
+  job = MakeSouffleJob.new
+  Delayed::Job.enqueue(job)
+
+  render status: :accepted, json: { status: "/souffle-status/#{job.client_status_id}" }
+end
+```
+
+Other jobs that we want to make pollable can follow the same pattern.
+
 
 ### Logging
 
