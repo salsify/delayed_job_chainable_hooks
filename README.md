@@ -1,16 +1,16 @@
 # DelayedJobChainableHooks
 
-Implement DelayedJob lifecyle hook methods without overriding previous definitions.
+DelayedJob lifecyle hooks that allow multiple definitions across modules or parent/child classes.
 
-DelayedJob has built-in *job-level* hook methods that support defining a callback on a given Job class.
+DelayedJob has [built-in *job-level* hook methods](https://github.com/collectiveidea/delayed_job#hooks) that support defining a callback on a given Job class.
 It also has a plugin system that allows adding lifecycle behavior *globally* to Delayed::Worker.
 
-What about when you want to share hook methods across jobs, but not apply them globally?
+What about when you want to share hook methods across job clases but not apply them globally?
 
 One option is to use modules or job-class inheritance. While this works it has the downside that you might overwrite a hook.
 If you realize that the method has a previous definition you can call `super` but it is error prone.
 
-This gem provides an alternative: chainable hook methods.
+This gem provides an alternative: chainable hook methods. They use different names so that you can use them alongside the existing DelayedJob hooks.
 
 Inspired by [this blog post](https://www.salsify.com/blog/engineering/delayed-jobs-callbacks-and-hooks-in-rails).
 
@@ -52,6 +52,9 @@ they can check back on the status of that work and adjust the UI accordingly.
 First we create the module to support that behavior, `ClientVisibleJob`.
 It includes `DelayedJobExtendedCallbacks`. In it we maintain job status in
 an ActiveRecord model named `ClientJobStatus`.
+
+Note that we define the hooks by passing blocks to the methods provided by this gem,
+unlike base DelayedJob where you implement the hook methods in the standard Ruby way using `def`.
 
 ```
 module ClientVisibleJob
@@ -98,15 +101,15 @@ class MakeSouffleJob
     bake
   end
 
-  def before_job_attempt
+  before_job_attempt do
     Delayed::Worker.logger.info("Let's make a souffle.")
   end
 
-  def after_job_success
+  after_job_success do
     Delayed::Worker.logger.info("Souffle has risen!")
   end
 
-  def after_job_failure
+  after_job_failure do
     Delayed::Worker.logger.warn("Souffle has fallen!")
   end
 end
