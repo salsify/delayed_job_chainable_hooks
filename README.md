@@ -51,12 +51,12 @@ Optionally pass do the same in a second module or subclass. Both the first and s
 
 ### Example
 
-For a subset of our DelayedJobs we want to provide a polling endpoint so that
-when API clients make a request that enqueues work to be processed in the background,
-they can check back on the status of that work and adjust the UI accordingly.
+For a subset of our DelayedJobs we want to provide a polling endpoint. When an API client
+prompts the application to enqueue one of these jobs, we should return a path that the
+client can subsequently poll to check on the status of the job and adjust the UI accordingly.
 
 First we create the module to support that behavior, `ClientVisibleJob`.
-It includes `DelayedJobExtendedCallbacks`. In it we maintain job status in
+It includes `DelayedJobChainableHooks`. It maintains job status in
 an ActiveRecord model named `ClientJobStatus`.
 
 Note that we define the hooks by passing blocks to the methods provided by this gem,
@@ -91,7 +91,7 @@ module ClientVisibleJob
 end
 ```
 
-Now `ClientVisibleJob` may be included in specific job classes. Those classes
+Now `ClientVisibleJob` can be included in specific job classes. Those classes
 may define their own versions of the hook methods but the ones defined in
 `ClientVisibleJob` will still execute.
 
@@ -121,7 +121,7 @@ class MakeSouffleJob
 end
 ```
 
-Code that enqueues this work, for example a web request handler, can treat `MakeSouffleJob`
+Code that enqueues this job, such as a web request handler, can treat `MakeSouffleJob`
 as a `ClientVisibleJob` and provide a status polling endpoint to clients.
 
 ```
