@@ -36,8 +36,8 @@ jobs:
           paths:
             - "vendor/bundle"
        - run:
-       name: Run Rubocop
-       command: bundle exec rubocop --config .rubocop.yml
+         name: Run Rubocop
+         command: bundle exec rubocop --config .rubocop.yml
   test:
     parameters:
       ruby_version:
