@@ -31,6 +31,11 @@ jobs:
         type: string
     docker:
       - image: salsify/ruby_ci:<< parameters.ruby_version >>
+      - image: circleci/postgres:9.6
+        environment:
+          POSTGRES_USER: "circleci"
+          POSTGRES_DB: "circle_test"
+          POSTGRES_HOST_AUTH_METHOD: "trust"
     environment:
       CIRCLE_TEST_REPORTS: "test-results"
     working_directory: ~/delayed_job_chainable_hooks
