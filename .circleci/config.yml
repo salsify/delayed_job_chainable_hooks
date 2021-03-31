@@ -1,9 +1,8 @@
 workflows:
   build:
     jobs:
-      - build:
-          context: Salsify
       - lint
+        ruby_version: "2.7.2"
       - test:
           matrix:
             parameters:
@@ -12,24 +11,19 @@ workflows:
                 - "3.0.0"
 version: 2.1
 jobs:
-  build:
+  lint:
+    parameters:
+      ruby_version:
+        type: string
     docker:
-      - image: salsify/ruby_ci:2.7.2
-      - image: circleci/postgres:12.3-ram
-        environment:
-          POSTGRES_USER: "ubuntu"
-          POSTGRES_DB: "circle_test"
-          POSTGRES_HOST_AUTH_METHOD: "trust"
-    environment:
-      CIRCLE_TEST_REPORTS: "test-results"
-      PGHOST: "localhost"
-      PGUSER: "ubuntu"
+      - image: salsify/ruby_ci:<< parameters.ruby_version >>
+    working_directory: ~/delayed_job_chainable_hooks
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-gems-ruby-2.7.2-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
-            - v1-gems-ruby-2.7.2-
+            - v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+            - v1-gems-<< parameters.ruby_version >>-
       - run:
           name: Install Gems
           command: |
@@ -38,40 +32,51 @@ jobs:
               bundle clean
             fi
       - save_cache:
-          key: v1-gems-ruby-2.7.2-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+          key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
           paths:
             - "vendor/bundle"
-            - "gemfiles/vendor/bundle"
-      - run:
-          name: Wait for Database
-          command: dockerize -wait tcp://localhost:5432 -timeout 60s
-      - run:
-          name: Wait for Database User
-          command: t=30; for i in `seq $t`; do psql -h localhost -p 5432 -U ubuntu -d circle_test -c '\q' && break; [ $i -eq $t ] && return 2; sleep 1; done;
-  lint:
-    docker:
-      - image: salsify/ruby_ci:2.7.2
-    working_directory: ~/delayed_job_chainable_hooks
-      - run:
-          name: Run Rubocop
-          command: bundle exec rubocop --config .rubocop.yml
+       - run:
+       name: Run Rubocop
+       command: bundle exec rubocop --config .rubocop.yml
   test:
     parameters:
       ruby_version:
         type: string
     docker:
       - image: salsify/ruby_ci:<< parameters.ruby_version >>
+        environment:
+          CIRCLE_TEST_REPORTS: "test-results"
+          PGHOST: "localhost"
+          PGUSER: "postgres"
       - image: circleci/postgres:12.3-ram
         environment:
-          POSTGRES_USER: "ubuntu"
+          POSTGRES_USER: "postgres"
           POSTGRES_DB: "circle_test"
           POSTGRES_HOST_AUTH_METHOD: "trust"
-    environment:
-      CIRCLE_TEST_REPORTS: "test-results"
-      PGHOST: "localhost"
-      PGUSER: "ubuntu"
     working_directory: ~/delayed_job_chainable_hooks
     steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+            - v1-gems-<< parameters.ruby_version >>-
+      - run:
+          name: Install Gems
+          command: |
+            if ! bundle check --path=vendor/bundle; then
+              bundle install --path=vendor/bundle --jobs=4 --retry=3
+              bundle clean
+            fi
+      - save_cache:
+          key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+          paths:
+            - "vendor/bundle"
+      - run:
+          name: Wait for Database
+          command: dockerize -wait tcp://localhost:5432 -timeout 60s
+#      - run:
+#          name: Wait for Database User
+#          command: t=30; for i in `seq $t`; do psql -h localhost -p 5432 -U ubuntu -d circle_test -c '\q' && break; [ $i -eq $t ] && return 2; sleep 1; done;
       - run:
           name: Run Tests
           command: |
