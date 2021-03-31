@@ -35,9 +35,9 @@ jobs:
           key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
           paths:
             - "vendor/bundle"
-       - run:
-         name: Run Rubocop
-         command: bundle exec rubocop --config .rubocop.yml
+      - run:
+        name: Run Rubocop
+        command: bundle exec rubocop --config .rubocop.yml
   test:
     parameters:
       ruby_version:
