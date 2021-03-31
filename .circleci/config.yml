@@ -33,10 +33,12 @@ jobs:
       - image: salsify/ruby_ci:<< parameters.ruby_version >>
       - image: circleci/postgres:9.6
         environment:
-          PGUSER: "circleci"
-          PGHOST: "circle_test"
+          POSTGRES_USER: "ubuntu"
+          POSTGRES_DB: "circle_test"
           POSTGRES_HOST_AUTH_METHOD: "trust"
     environment:
+      PGHOST: "localhost"
+      PGUSER: "ubuntu"
       CIRCLE_TEST_REPORTS: "test-results"
     working_directory: ~/delayed_job_chainable_hooks
     steps:
