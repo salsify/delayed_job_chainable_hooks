@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'pg'
 require 'simplecov'
 SimpleCov.add_filter '/config/'
 SimpleCov.add_filter '/spec/'
