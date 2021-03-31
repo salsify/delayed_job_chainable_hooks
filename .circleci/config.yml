@@ -25,12 +25,12 @@ jobs:
             - v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
             - v1-gems-<< parameters.ruby_version >>-
       - run:
-        name: Install Gems
-        command: |
-          if ! bundle check --path=vendor/bundle; then
-            bundle install --path=vendor/bundle --jobs=4 --retry=3
-            bundle clean
-          fi
+          name: Install Gems
+          command: |
+            if ! bundle check --path=vendor/bundle; then
+              bundle install --path=vendor/bundle --jobs=4 --retry=3
+              bundle clean
+            fi
       - save_cache:
           key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
           paths:
