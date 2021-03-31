@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DelayedJobChainableHooks
   class Plugin < Delayed::Plugin
 
@@ -13,9 +15,9 @@ module DelayedJobChainableHooks
         begin
           block.call(job, *args)
           DelayedJobChainableHooks::Plugin.run_hooks(payload, :after_job_success)
-        rescue => error
-          DelayedJobChainableHooks::Plugin.run_hooks(payload, :after_job_attempt_error, error)
-          raise error
+        rescue StandardError => e
+          DelayedJobChainableHooks::Plugin.run_hooks(payload, :after_job_attempt_error, e)
+          raise e
         end
       end
 
@@ -41,8 +43,8 @@ module DelayedJobChainableHooks
 
     def self.safe_run_hooks(object, hook_name, *args)
       run_hooks(object, hook_name, *args)
-    rescue => error
-      DelayedJobChainableHooks.logger.warn("Failed to run hook #{hook_name} on #{object.class}: #{error.message}")
+    rescue StandardError => e
+      DelayedJobChainableHooks.logger.warn("Failed to run hook #{hook_name} on #{object.class}: #{e.message}")
     end
 
     def self.run_hooks(object, hook_name, *args)
