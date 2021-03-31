@@ -169,4 +169,3 @@ https://github.com/salsify/delayed_job_chainable_hooks.
 
 The gem is available as open source under the terms of the
 [MIT License](http://opensource.org/licenses/MIT).
-
