@@ -47,13 +47,6 @@ jobs:
       - image: salsify/ruby_ci:<< parameters.ruby_version >>
         environment:
           CIRCLE_TEST_REPORTS: "test-results"
-          PGHOST: "localhost"
-          PGUSER: "postgres"
-      - image: circleci/postgres:12.3-ram
-        environment:
-          POSTGRES_USER: "postgres"
-          POSTGRES_DB: "circle_test"
-          POSTGRES_HOST_AUTH_METHOD: "trust"
     working_directory: ~/delayed_job_chainable_hooks
     steps:
       - checkout
@@ -72,9 +65,6 @@ jobs:
           key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
           paths:
             - "vendor/bundle"
-      - run:
-          name: Wait for Database
-          command: dockerize -wait tcp://localhost:5432 -timeout 60s
       - run:
           name: Run Tests
           command: |

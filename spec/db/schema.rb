@@ -2,7 +2,7 @@
 
 ActiveRecord::Schema.define(version: 0) do
 
-  create_table(:delayed_jobs, id: :bigserial, force: true) do |t|
+  create_table(:delayed_jobs, force: true) do |t|
     t.integer :priority, default: 0
     t.integer :attempts, default: 0
     t.text :handler
