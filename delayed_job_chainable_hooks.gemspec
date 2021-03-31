@@ -1,6 +1,6 @@
-# coding: utf-8
+# frozen_string_literal: true
 
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'delayed_job_chainable_hooks/version'
 
@@ -10,7 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Salsify, Inc']
   spec.email         = ['engineering@salsify.com']
 
-  spec.summary       = 'Implement DelayedJob hook methods in multiple modules/job classes without overriding previous definitions.'
+  spec.summary       = 'Implement DelayedJob hook methods in multiple modules/job classes ' \
+                       'without overriding previous definitions.'
   spec.description   = spec.summary
   spec.homepage      = 'https://github.com/salsify/delayed_job_chainable_hooks'
 
@@ -29,19 +30,21 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'bin'
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
+  spec.required_ruby_version = '>= 2.6'
 
+  spec.add_dependency 'activesupport', '>= 5.2'
   spec.add_dependency 'delayed_job', '>= 4.1'
   spec.add_dependency 'delayed_job_active_record'
   spec.add_dependency 'hooks'
-  spec.add_dependency 'activesupport', '>= 4.1'
 
-  spec.add_development_dependency 'bundler', '~> 1.12'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'rspec', '~> 3.4'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'salsify_rubocop', '~> 0.48.1'
-  spec.add_development_dependency 'overcommit'
-  spec.add_development_dependency 'activerecord', '>= 4.2'
+  spec.add_development_dependency 'activerecord', '>= 5.2'
+  spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'database_cleaner'
-  spec.add_development_dependency 'pg'
+  spec.add_development_dependency 'overcommit'
+  spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_development_dependency 'rspec', '>= 3.8'
+  spec.add_development_dependency 'rspec_junit_formatter'
+  spec.add_development_dependency 'salsify_rubocop', '~> 1.0.2'
+  spec.add_development_dependency 'simplecov'
+  spec.add_development_dependency 'sqlite3'
 end

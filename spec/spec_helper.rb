@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.add_filter '/config/'
 SimpleCov.add_filter '/spec/'
 SimpleCov.start
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'delayed_job_chainable_hooks'
 
 require 'database_cleaner'
@@ -28,29 +30,29 @@ RSpec.configure do |config|
   # you configure your source control system to ignore this file.
   config.example_status_persistence_file_path = 'spec/examples.txt'
 
-  DATABASE_NAME = 'delayed_job_chainable_hooks_test'.freeze
+  db_adapter = ENV.fetch('ADAPTER', 'sqlite3')
+  db_config = YAML.safe_load(File.read('spec/db/database.yml'))
 
   config.before(:suite) do
-    `createdb #{DATABASE_NAME}`
-    database_url = "postgres://localhost/#{DATABASE_NAME}"
-    ActiveRecord::Base.establish_connection(database_url)
-
+    puts "Testing with ActiveRecord #{ActiveRecord::VERSION::STRING}"
+    ActiveRecord::Base.establish_connection(db_config[db_adapter])
     require "#{spec_dir}/db/schema"
+
+    require "#{spec_dir}/fixtures/job_classes"
   end
 
   config.after(:suite) do
     ActiveRecord::Base.connection_pool.disconnect!
-    `dropdb --if-exists #{DATABASE_NAME}`
   end
 
-  config.before(:each) do |example|
+  config.before do |example|
     Delayed::Worker.logger.info("Starting example #{example.location}")
 
     DatabaseCleaner.strategy = example.metadata.fetch(:cleaner_strategy, :transaction)
     DatabaseCleaner.start
   end
 
-  config.after(:each) do
+  config.after do
     DatabaseCleaner.clean
   end
 end

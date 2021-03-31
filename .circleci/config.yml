@@ -1,0 +1,73 @@
+workflows:
+  build:
+    jobs:
+      - lint:
+          ruby_version: "2.7.2"
+      - test:
+          matrix:
+            parameters:
+              ruby_version:
+                - "2.6.5"
+                - "2.7.2"
+                - "3.0.0"
+version: 2.1
+jobs:
+  lint:
+    parameters:
+      ruby_version:
+        type: string
+    docker:
+      - image: salsify/ruby_ci:<< parameters.ruby_version >>
+    working_directory: ~/delayed_job_chainable_hooks
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+            - v1-gems-<< parameters.ruby_version >>-
+      - run:
+          name: Install Gems
+          command: |
+            if ! bundle check --path=vendor/bundle; then
+              bundle install --path=vendor/bundle --jobs=4 --retry=3
+              bundle clean
+            fi
+      - save_cache:
+          key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+          paths:
+            - "vendor/bundle"
+      - run:
+          name: Run Rubocop
+          command: bundle exec rubocop --config .rubocop.yml
+  test:
+    parameters:
+      ruby_version:
+        type: string
+    docker:
+      - image: salsify/ruby_ci:<< parameters.ruby_version >>
+        environment:
+          CIRCLE_TEST_REPORTS: "test-results"
+    working_directory: ~/delayed_job_chainable_hooks
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+            - v1-gems-<< parameters.ruby_version >>-
+      - run:
+          name: Install Gems
+          command: |
+            if ! bundle check --path=vendor/bundle; then
+              bundle install --path=vendor/bundle --jobs=4 --retry=3
+              bundle clean
+            fi
+      - save_cache:
+          key: v1-gems-ruby-<< parameters.ruby_version >>-{{ checksum "delayed_job_chainable_hooks.gemspec" }}-{{ checksum "Gemfile" }}
+          paths:
+            - "vendor/bundle"
+      - run:
+          name: Run Tests
+          command: |
+            bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/rspec/junit.xml --format progress spec
+      - store_test_results:
+          path: "test-results"

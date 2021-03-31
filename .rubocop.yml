@@ -1,2 +1,13 @@
 inherit_gem:
   salsify_rubocop: conf/rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 2.6
+  Exclude:
+    # IntelliJ compile target directory
+    - 'out/**/*'
+    # Others excluded by https://github.com/salsify/salsify_rubocop/blob/master/conf/rubocop_without_rspec.yml
+    - 'bin/**/*'
+    - 'coverage/**/*'
+    - 'log/**/*'
+    - 'vendor/**/*'
