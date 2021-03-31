@@ -2,9 +2,6 @@
 
 describe DelayedJobChainableHooks do
   before do
-    spec_dir = File.dirname(__FILE__)
-    require "#{spec_dir}/fixtures/job_classes"
-
     JobSuperClass.called_callbacks.clear
     Delayed::Worker.reset
     Delayed::Worker.plugins << DelayedJobChainableHooks::Plugin

@@ -52,6 +52,8 @@ RSpec.configure do |config|
     ActiveRecord::Base.establish_connection(database_url)
 
     require "#{spec_dir}/db/schema"
+
+    require "#{spec_dir}/fixtures/job_classes"
   end
 
   config.after(:suite) do
