@@ -18,7 +18,7 @@ jobs:
       ruby_version:
         type: string
     docker:
-      - image: salsify/ruby_ci:<< parameters.ruby_version >>
+      - image: cimg/ruby:<< parameters.ruby_version >>
     working_directory: ~/delayed_job_chainable_hooks
     steps:
       - checkout
@@ -45,7 +45,7 @@ jobs:
       ruby_version:
         type: string
     docker:
-      - image: salsify/ruby_ci:<< parameters.ruby_version >>
+      - image: cimg/ruby:<< parameters.ruby_version >>
         environment:
           CIRCLE_TEST_REPORTS: "test-results"
     working_directory: ~/delayed_job_chainable_hooks
